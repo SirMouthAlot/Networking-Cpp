@@ -1,0 +1,14 @@
+#pragma once
+#include <string>
+#include "Convertable.h"
+
+struct String : Convertable
+{
+public:
+	String(std::string string) : m_string(string) { }
+
+	virtual std::string ToString() override;
+	virtual void SetValue(std::string toConv) override;
+
+	std::string m_string;
+}; 
