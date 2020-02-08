@@ -44,6 +44,7 @@ public:
 
 	static int FindClient(sockaddr_in clientAddr);
 	static int AddClient(sockaddr_in clientAddr);
+	static int GetNumConnected();
 
 	static bool ShutdownSocket();
 	static void CloseWinsock();

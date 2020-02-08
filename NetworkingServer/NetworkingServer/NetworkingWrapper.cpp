@@ -170,6 +170,11 @@ int NetworkingWrapper::AddClient(sockaddr_in clientAddr)
 	return -1;
 }
 
+int NetworkingWrapper::GetNumConnected()
+{
+	return m_addresses.size();
+}
+
 bool NetworkingWrapper::ShutdownSocket()
 {
 	//Shutdown the socket

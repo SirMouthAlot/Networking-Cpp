@@ -9,17 +9,23 @@ int main()
 	NetworkingWrapper::CreateSocket(IPPROTO_UDP);
 	NetworkingWrapper::BindSocket();
 
+	String connect;
+	NetworkingWrapper::ReceiveMsg(&connect);
+
 	while (true)
 	{
-		printf("Current ship position\n");
-		Float x, y, z;
-		NetworkingWrapper::ReceiveMsg(&x);
-		printf("%f\n", x.m_float);
-		NetworkingWrapper::ReceiveMsg(&y);
-		printf("%f\n", y.m_float);
-		NetworkingWrapper::ReceiveMsg(&z);
-		printf("%f\n", z.m_float);
-		printf("\n");
+		for (int i = 0; i < NetworkingWrapper::GetNumConnected(); i++)
+		{
+			printf("Current ship position\n");
+			Float x, y, z;
+			NetworkingWrapper::ReceiveMsg(&x);
+			printf("%f\n", x.m_float);
+			NetworkingWrapper::ReceiveMsg(&y);
+			printf("%f\n", y.m_float);
+			NetworkingWrapper::ReceiveMsg(&z);
+			printf("%f\n", z.m_float);
+			printf("\n");
+		}
 	}
 
 	system("pause");
