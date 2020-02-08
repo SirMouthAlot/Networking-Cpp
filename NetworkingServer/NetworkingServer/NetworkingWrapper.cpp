@@ -126,6 +126,16 @@ bool NetworkingWrapper::ReceiveMsg(Convertable* message)
 		return false;
 	}
 
+	int clientNum = FindClient(fromAddr);
+
+	if (clientNum == -1)
+	{
+		//Ignore this mother fucker
+		return false;
+	}
+
+	printf("Message from Client %i: ", clientNum);
+
 	//Turns recv buffer into a string
 	std::string temp;
 	temp += recv_buf;

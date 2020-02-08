@@ -11,12 +11,15 @@ int main()
 
 	while (true)
 	{
+		printf("Current ship position\n");
 		Float x, y, z;
 		NetworkingWrapper::ReceiveMsg(&x);
+		printf("%f\n", x.m_float);
 		NetworkingWrapper::ReceiveMsg(&y);
+		printf("%f\n", y.m_float);
 		NetworkingWrapper::ReceiveMsg(&z);
-
-		printf("Ship position: (%f, %f, %f)\n", x.m_float, y.m_float, z.m_float);
+		printf("%f\n", z.m_float);
+		printf("\n");
 	}
 
 	system("pause");

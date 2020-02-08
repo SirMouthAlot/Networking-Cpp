@@ -19,12 +19,11 @@ public:
 
 	bool operator()(const sockaddr_in& compare) const
 	{
-		bool addressSame = (m_original.sin_addr.S_un.S_addr == compare.sin_addr.S_un.S_addr);
+ 		bool addressSame = (m_original.sin_addr.S_un.S_addr == compare.sin_addr.S_un.S_addr);
 		bool familySame = m_original.sin_family == compare.sin_family;
 		bool portSame = m_original.sin_port == compare.sin_port;
-		bool zeroSame = m_original.sin_zero == compare.sin_zero;
 
-		return (addressSame && familySame && portSame && zeroSame);
+		return (addressSame && familySame && portSame);
 	}
 
 	sockaddr_in m_original;
