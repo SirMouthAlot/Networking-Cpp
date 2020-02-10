@@ -1,4 +1,32 @@
 #include "NetworkingWrapper.h"
+#include <thread>
+
+bool keepOpen = true;
+
+void GetPositionInfo()
+{
+	printf("Current ship position\n");
+	Float x, y, z;
+	NetworkingWrapper::ReceiveMsg(&x);
+	printf("%f\n", x.m_float);
+	NetworkingWrapper::ReceiveMsg(&y);
+	printf("%f\n", y.m_float);
+	NetworkingWrapper::ReceiveMsg(&z);
+	printf("%f\n", z.m_float);
+	printf("\n");
+}
+
+bool ExitProgram()
+{
+	while (true)
+	{
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+			exit(0);
+		}
+	}
+}
+
 
 int main()
 {
@@ -9,23 +37,16 @@ int main()
 	NetworkingWrapper::CreateSocket(IPPROTO_UDP);
 	NetworkingWrapper::BindSocket();
 
-	String connect;
-	NetworkingWrapper::ReceiveMsg(&connect);
+	//Start a separate thread for receiving data
+	std::thread t1;
 
-	while (true)
+	//Keeps the exit program loop running at all times
+	t1 = std::thread(ExitProgram);
+	t1.detach();
+
+	while (keepOpen)
 	{
-		for (int i = 0; i < NetworkingWrapper::GetNumConnected(); i++)
-		{
-			printf("Current ship position\n");
-			Float x, y, z;
-			NetworkingWrapper::ReceiveMsg(&x);
-			printf("%f\n", x.m_float);
-			NetworkingWrapper::ReceiveMsg(&y);
-			printf("%f\n", y.m_float);
-			NetworkingWrapper::ReceiveMsg(&z);
-			printf("%f\n", z.m_float);
-			printf("\n");
-		}
+		GetPositionInfo();
 	}
 
 	system("pause");
