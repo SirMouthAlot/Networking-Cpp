@@ -12,10 +12,15 @@ extern "C"
 	PLUGIN_API void SendFloat(float flt, MessageFlags flag);
 	PLUGIN_API void SendInt(int it, MessageFlags flag);
 	PLUGIN_API void SendString(const char* str, MessageFlags flag);
+	PLUGIN_API void SendVector(Vector3CS vec, MessageFlags flag);
 
 	PLUGIN_API float RecvFloat();
 	PLUGIN_API int RecvInt();
-	PLUGIN_API std::string RecvString();
+	PLUGIN_API const char* RecvString();
+	PLUGIN_API Vector3CS RecvVector();
+
+	PLUGIN_API void DisconnectFromServer();
+	PLUGIN_API void CloseClient();
 
 #ifdef __cplusplus
 }

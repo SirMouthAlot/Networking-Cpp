@@ -20,6 +20,8 @@ public:
 	int AddClient(Client* client);
 	int GetNumConnected();
 
+	void CloseServer();
+
 private:
 	SOCKET m_serverSock;
 	struct addrinfo* m_ptr = NULL, m_hints;

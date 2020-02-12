@@ -6,11 +6,8 @@ void ReceiveStrings()
 {
 	while (true)
 	{
-		printf("%s\n", RecvString().c_str());
-
-		printf("%i\n", RecvInt());
-
-		printf("%f\n", RecvFloat());
+		//printf("ID number: %i \n", RecvInt());
+		std::cout << RecvVector() << std::endl;
 	}
 }
 
@@ -27,13 +24,13 @@ int main()
 	t.detach();
 
 	printf("You have connected!\n");
-	SendString("New Client has just connected", MessageFlags::BROADCAST_ALL);
-	SendInt(69, MessageFlags::BROADCAST_ALL);
-	SendFloat(69.69f, MessageFlags::BROADCAST_ALL);
 
+	int i = 1;
 	while (true)
 	{
-
+		/*SendInt(201, MessageFlags::BROADCAST_ALL);
+		SendVector(Vector3CS(0.f, -9.f, i), MessageFlags::BROADCAST_ALL);
+		i++;*/
 	}
 
 	return 0;

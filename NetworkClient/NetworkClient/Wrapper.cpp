@@ -30,6 +30,12 @@ PLUGIN_API void SendString(const char* str, MessageFlags flag)
 	return myClient.SendMsg(MessageType::MSG_STRING, &temp, flag);
 }
 
+PLUGIN_API void SendVector(Vector3CS vec, MessageFlags flag)
+{
+	Vector3 temp = Vector3(vec.x, vec.y, vec.z);
+	return myClient.SendMsg(MessageType::MSG_VECTOR3, &temp, MessageFlags::BROADCAST_ALL);
+}
+
 PLUGIN_API float RecvFloat()
 {
 	Float temp;
@@ -39,7 +45,7 @@ PLUGIN_API float RecvFloat()
 	return temp.m_float;
 }
 
-int RecvInt()
+PLUGIN_API int RecvInt()
 {
 	Int temp;
 	MessageType type;
@@ -48,12 +54,33 @@ int RecvInt()
 	return temp.m_int;
 }
 
-PLUGIN_API std::string RecvString()
+PLUGIN_API const char* RecvString()
 {
 	String temp;
 	MessageType type;
 	myClient.RecvMsg(type, &temp);
 	
-	std::string test = temp.m_string;
+	const char* test = temp.m_string.c_str();
 	return test;
+}
+
+PLUGIN_API Vector3CS RecvVector()
+{
+	Vector3 temp;
+	MessageType type;
+	myClient.RecvMsg(type, &temp);
+	
+	Vector3CS csVersion = Vector3CS(temp.x, temp.y, temp.z);
+
+	return csVersion;
+}
+
+PLUGIN_API void DisconnectFromServer()
+{
+	myClient.DisconnectFromServer();
+}
+
+PLUGIN_API void CloseClient()
+{
+	myClient.ShutdownClient();
 }

@@ -28,7 +28,7 @@ addrinfo NetworkingWrapper::SetupHints(int family, int sockType, int protocol, i
 	return hints;
 }
 
-bool NetworkingWrapper::ConnectToServer(std::string ip, addrinfo hints, addrinfo** ptr)
+bool NetworkingWrapper::ConnectTo(std::string ip, addrinfo hints, addrinfo** ptr)
 {
 	if (ip == "")
 	{

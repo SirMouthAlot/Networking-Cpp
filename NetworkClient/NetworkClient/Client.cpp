@@ -13,21 +13,20 @@ void Client::InitClient()
 
 void Client::ConnectToServer(const char* ip)
 {
-	NetworkingWrapper::ConnectToServer(ip, m_hints, &m_ptr);
+	NetworkingWrapper::ConnectTo(ip, m_hints, &m_ptr);
 	m_cliSock = NetworkingWrapper::CreateSocket(IPPROTO_UDP);
 
 	//Sends a connection request
 	SendMsg(MessageType::MSG_CONNECT, &String("Connect"), MessageFlags::NONE);
 
-	//Get back the client number for this client
 	Int clientNum;
 	MessageType type;
 	RecvMsg(type, &clientNum);
 
+	printf("You are client %i\n", clientNum.m_int);
+
 	//Store it
 	m_clientNum = clientNum.m_int;
-
-	printf("You are client number %i\n", clientNum.m_int);
 }
 
 void Client::DisconnectFromServer()
@@ -48,14 +47,15 @@ void Client::SendMsg(MessageType type, Convertable* message, MessageFlags flags)
 
 void Client::RecvMsg(MessageType& type, Convertable* message)
 {
-	//Gets message
+	//Gets message tyoe
 	std::string messageType;
 	NetworkingWrapper::ReceiveMsg(m_cliSock, &messageType);
 	Int messType;
 	messType.SetValue(messageType);
-
+	//Stores type
 	type = (MessageType)messType.m_int;
 
+	//Gets message
 	std::string mess;
 	NetworkingWrapper::ReceiveMsg(m_cliSock, &mess);
 
@@ -66,4 +66,9 @@ void Client::RecvMsg(MessageType& type, Convertable* message)
 sockaddr_in Client::GetAddress() const
 {
 	return m_clientAddress;
+}
+
+void Client::ShutdownClient()
+{
+	NetworkingWrapper::ShutdownSocket(m_cliSock, m_ptr);
 }

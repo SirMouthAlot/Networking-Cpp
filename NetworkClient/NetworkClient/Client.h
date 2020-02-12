@@ -39,11 +39,12 @@ public:
 
 	sockaddr_in GetAddress() const;
 
+	void ShutdownClient();
+
 	int m_clientNum;
 private:
 	SOCKET m_cliSock;
-	struct addrinfo m_hints;
-	struct addrinfo* m_ptr = &m_hints;
+	struct addrinfo* m_ptr = NULL, m_hints;
 
 	sockaddr_in m_clientAddress;
 };
@@ -64,5 +65,6 @@ public:
 
 	Client* m_client;
 };
+
 
 #endif // !__CLIENT_H__

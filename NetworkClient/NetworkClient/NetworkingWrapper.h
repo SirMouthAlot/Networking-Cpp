@@ -9,6 +9,7 @@
 
 #include "Number.h"
 #include "String.h"
+#include "Vector.h"
 #include "PluginSettings.h"
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -18,7 +19,7 @@ class NetworkingWrapper abstract
 public:
 	static bool StartupWinsock();
 	static addrinfo SetupHints(int family = AF_INET, int sockType = SOCK_DGRAM, int protocol = IPPROTO_UDP, int flag=NULL);
-	static bool ConnectToServer(std::string ip, addrinfo hints, addrinfo** ptr);
+	static bool ConnectTo(std::string ip, addrinfo hints, addrinfo** ptr);
 	static SOCKET CreateSocket(IPPROTO protocol=IPPROTO_UDP);
 	static bool BindSocket(SOCKET sock, addrinfo* ptr);
 

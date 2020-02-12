@@ -66,3 +66,8 @@ sockaddr_in Client::GetAddress() const
 {
 	return m_clientAddress;
 }
+
+void Client::ShutdownClient()
+{
+	NetworkingWrapper::ShutdownSocket(m_cliSock, m_ptr);
+}

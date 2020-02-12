@@ -39,6 +39,8 @@ public:
 
 	sockaddr_in GetAddress() const;
 
+	void ShutdownClient();
+
 	int m_clientNum;
 private:
 	SOCKET m_cliSock;

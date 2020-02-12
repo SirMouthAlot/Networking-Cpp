@@ -111,7 +111,7 @@ void Server::RecvMsg()
 		tempMessage = new String();
 		break;
 	case MessageType::MSG_VECTOR3:
-		//TODO: Implement Vector3 messages
+		tempMessage = new Vector3();
 		break;
 	default:
 		//Do nothing
@@ -199,4 +199,9 @@ int Server::AddClient(Client* client)
 int Server::GetNumConnected()
 {
 	return m_clients.size();
+}
+
+void Server::CloseServer()
+{
+	NetworkingWrapper::CloseWinsock(m_serverSock, m_ptr);
 }
