@@ -34,37 +34,37 @@ void Server::InitServer()
 
 void Server::SendMsg(MessageType type, Convertable* message, Client client)
 {
-	//Casts message type to int
-	Int messageType((int)type);
+	//Combine all the shit together into one message
+	std::string mess;
+	mess += Int((int)type).ToString();
+	mess += " ";
+	mess += message->ToString();
 
 	//Send message type first
-	NetworkingWrapper::SendMsg(m_serverSock, &messageType, client.GetAddress());
+	NetworkingWrapper::SendMsg(m_serverSock, &String(mess), client.GetAddress());
 
 	//Send actual message
-	NetworkingWrapper::SendMsg(m_serverSock, message, client.GetAddress());
+	//NetworkingWrapper::SendMsg(m_serverSock, message, client.GetAddress());
 }
 
 void Server::RecvMsg()
 {
-	Int tempType;
-	std::string typeMessage;
+	std::string mess;
 
 	sockaddr_in clientAddr;
-	clientAddr = NetworkingWrapper::ReceiveMsg(m_serverSock, &typeMessage);
+	clientAddr = NetworkingWrapper::ReceiveMsg(m_serverSock, &mess);
 
-	//Converts to int
-	tempType.SetValue(typeMessage);
-
-	Convertable* tempMessage = nullptr;;
+	int messType;
+	sscanf_s(mess.c_str(), "%i", &messType);
 
 	//if client was on list
 	bool onList = false;
 	Client* client;
 	int clientNum = -1;
 
-	switch ((MessageType)tempType.m_int)
+	switch ((MessageType)messType)
 	{
-		
+
 	case MessageType::MSG_CONNECT:
 		//Check if this client is on the list, if not add it
 		client = new Client(clientAddr);
@@ -99,71 +99,143 @@ void Server::RecvMsg()
 		client = nullptr;
 		break;
 	case MessageType::MSG_INT:
-		tempMessage = new Int();
+	{
+		int messMess;
+		int messFlag;
+		sscanf_s(mess.c_str(), "%i %i %i", &messType, &messMess, &messFlag);
+
+		//Check for broadcast stuffs
+		switch ((MessageFlags)messFlag)
+		{
+		case MessageFlags::BROADCAST_ALL:
+			//If it's not a connect or disconnect request
+			client = new Client(clientAddr);
+			clientNum = FindClient(client, onList);
+
+			for (int i = 0; i < m_clients.size(); i++)
+			{
+				//Broadcast the message to all clients
+				if (i != clientNum)
+				{
+					SendMsg((MessageType)messType, &Int(messMess), *m_clients[i]);
+				}
+			}
+
+			break;
+		case MessageFlags::BROADCAST_RELATED:
+			//TODO: Implement this
+			break;
+		case MessageFlags::NONE:
+			//Do nothing
+			break;
+		}
 		break;
+	}
 	case MessageType::MSG_FLOAT:
-		tempMessage = new Float();
+	{
+		float messMess;
+		int messFlag;
+		sscanf_s(mess.c_str(), "%i %f %i", &messType, &messMess, &messFlag);
+
+		//Check for broadcast stuffs
+		switch ((MessageFlags)messFlag)
+		{
+		case MessageFlags::BROADCAST_ALL:
+			//If it's not a connect or disconnect request
+			client = new Client(clientAddr);
+			clientNum = FindClient(client, onList);
+
+			for (int i = 0; i < m_clients.size(); i++)
+			{
+				//Broadcast the message to all clients
+				if (i != clientNum)
+				{
+					SendMsg((MessageType)messType, &Float(messMess), *m_clients[i]);
+				}
+			}
+
+			break;
+		case MessageFlags::BROADCAST_RELATED:
+			//TODO: Implement this
+			break;
+		case MessageFlags::NONE:
+			//Do nothing
+			break;
+		}
 		break;
-	case MessageType::MSG_DOUBLE:
-		tempMessage = new Double();
-		break;
+	}
 	case MessageType::MSG_STRING:
-		tempMessage = new String();
+	{
+		std::string messMess;
+		int messFlag;
+		sscanf_s(mess.c_str(), "%i %s %i", &messType, messMess, &messFlag);
+
+		//Check for broadcast stuffs
+		switch ((MessageFlags)messFlag)
+		{
+		case MessageFlags::BROADCAST_ALL:
+			//If it's not a connect or disconnect request
+			client = new Client(clientAddr);
+			clientNum = FindClient(client, onList);
+
+			for (int i = 0; i < m_clients.size(); i++)
+			{
+				//Broadcast the message to all clients
+				if (i != clientNum)
+				{
+					SendMsg((MessageType)messType, &String(messMess), *m_clients[i]);
+				}
+			}
+
+			break;
+		case MessageFlags::BROADCAST_RELATED:
+			//TODO: Implement this
+			break;
+		case MessageFlags::NONE:
+			//Do nothing
+			break;
+		}
 		break;
+	}
 	case MessageType::MSG_VECTOR3:
-		tempMessage = new Vector3();
+	{
+		Vector3 messMess;
+		int messFlag;
+		sscanf_s(mess.c_str(), "%i %f %f %f %i", &messType, &messMess.x, &messMess.y, &messMess.z, &messFlag);
+
+		//Check for broadcast stuffs
+		switch ((MessageFlags)messFlag)
+		{
+		case MessageFlags::BROADCAST_ALL:
+			//If it's not a connect or disconnect request
+			client = new Client(clientAddr);
+			clientNum = FindClient(client, onList);
+
+			for (int i = 0; i < m_clients.size(); i++)
+			{
+				//Broadcast the message to all clients
+				if (i != clientNum)
+				{
+					SendMsg((MessageType)messType, &Vector3(messMess), *m_clients[i]);
+				}
+			}
+
+			break;
+		case MessageFlags::BROADCAST_RELATED:
+			//TODO: Implement this
+			break;
+		case MessageFlags::NONE:
+			//Do nothing
+			break;
+		}
 		break;
+	}
 	default:
 		//Do nothing
 		break;
 	}
 
-	std::string messageMessage;
-	NetworkingWrapper::ReceiveMsg(m_serverSock, &messageMessage);
-	if (tempMessage != nullptr)
-	{
-		//Converts message to correct type
-		tempMessage->SetValue(messageMessage);
-	}
-
-	std::string messageFlag;
-	NetworkingWrapper::ReceiveMsg(m_serverSock, &messageFlag);
-	Int messFlag;
-	messFlag.SetValue(messageFlag);
-
-	switch ((MessageFlags)messFlag.m_int)
-	{
-	case MessageFlags::BROADCAST_ALL:
-		//If it's not a connect or disconnect request
-		client = new Client(clientAddr);
-		clientNum = FindClient(client, onList);
-
-		for (int i = 0; i < m_clients.size(); i++)
-		{
-			//Broadcast the message to all clients
-			if (i != clientNum)
-			{
-				SendMsg((MessageType)tempType.m_int, tempMessage, *m_clients[i]);
-			}
-		}
-
-		break;
-	case MessageFlags::BROADCAST_RELATED:
-		//TODO: Implement this
-		break;
-	case MessageFlags::NONE:
-		//Do nothing
-		break;
-	}
-
-	//Cleanup message data
-	if (tempMessage != nullptr)
-	{
-		delete tempMessage;
-		tempMessage = nullptr;
-	}
-
-	if ((MessageType)tempType.m_int == MessageType::MSG_CONNECT && !onList)
+	if ((MessageType)messType == MessageType::MSG_CONNECT && !onList)
 	{
 		Client clientN = Client(clientAddr);
 		int clientNumN = FindClient(&clientN, onList);

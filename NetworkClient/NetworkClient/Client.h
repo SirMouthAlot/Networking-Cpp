@@ -43,6 +43,9 @@ public:
 
 	int m_clientNum;
 private:
+
+	void MessageTypeSwitch(std::string mess, int type, Convertable* message);
+
 	SOCKET m_cliSock;
 	struct addrinfo* m_ptr = NULL, m_hints;
 

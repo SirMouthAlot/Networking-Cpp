@@ -23,7 +23,6 @@ void Client::ConnectToServer(const char* ip)
 	MessageType type;
 	RecvMsg(type, &clientNum);
 
-	printf("You are client %i\n", clientNum.m_int);
 
 	//Store it
 	m_clientNum = clientNum.m_int;
@@ -37,30 +36,38 @@ void Client::DisconnectFromServer()
 
 void Client::SendMsg(MessageType type, Convertable* message, MessageFlags flags)
 {
+	//Combine all the shit together into one message
+	std::string mess;
+	mess += Int((int)type).ToString();
+	mess += " ";
+	mess += message->ToString();
+	mess += " ";
+	mess += Int((int)flags).ToString();
+
 	//Send message type
-	NetworkingWrapper::SendMsg(m_cliSock, &Int((int)type), m_ptr);
+	//NetworkingWrapper::SendMsg(m_cliSock, &Int((int)type), m_ptr);
 	//Send actual message
-	NetworkingWrapper::SendMsg(m_cliSock, message, m_ptr);
+	NetworkingWrapper::SendMsg(m_cliSock, &String(mess), m_ptr);
 	//Send message flags
-	NetworkingWrapper::SendMsg(m_cliSock, &Int((int)flags), m_ptr);
+	//NetworkingWrapper::SendMsg(m_cliSock, &Int((int)flags), m_ptr);
 }
 
 void Client::RecvMsg(MessageType& type, Convertable* message)
 {
 	//Gets message tyoe
-	std::string messageType;
-	NetworkingWrapper::ReceiveMsg(m_cliSock, &messageType);
-	Int messType;
-	messType.SetValue(messageType);
-	//Stores type
-	type = (MessageType)messType.m_int;
-
-	//Gets message
 	std::string mess;
 	NetworkingWrapper::ReceiveMsg(m_cliSock, &mess);
 
-	//Converts value and stores in message
-	message->SetValue(mess);
+	int messType;
+	//Store message type
+	sscanf_s(mess.c_str(), "%i", &messType);
+
+	int messFlag;
+
+	type = MessageType(messType);
+
+	//Performs switch statement stuffs
+	MessageTypeSwitch(mess, messType, message);
 }
 
 sockaddr_in Client::GetAddress() const
@@ -71,4 +78,47 @@ sockaddr_in Client::GetAddress() const
 void Client::ShutdownClient()
 {
 	NetworkingWrapper::ShutdownSocket(m_cliSock, m_ptr);
+}
+
+void Client::MessageTypeSwitch(std::string mess, int type, Convertable* message)
+{
+	switch ((MessageType)type)
+	{
+	case MessageType::MSG_INT:
+	{
+		int messMess;
+		sscanf_s(mess.c_str(), "%i %i", &type, &messMess);
+
+		//Share the message
+		message->SetValue(Int(messMess).ToString());
+		break;
+	}
+	case MessageType::MSG_FLOAT:
+	{
+		float messMess;
+		sscanf_s(mess.c_str(), "%i %f", &type, &messMess);
+
+		//Share the message
+		message->SetValue(Float(messMess).ToString());
+		break;
+	}
+	case MessageType::MSG_STRING:
+	{
+		std::string messMess;
+		sscanf_s(mess.c_str(), "%i %s", &type, &messMess);
+
+		//Share the message
+		message->SetValue(String(messMess).ToString());
+		break;
+	}
+	case MessageType::MSG_VECTOR3:
+	{
+		Vector3 messMess;
+		sscanf_s(mess.c_str(), "%i %f %f %f", &type, &messMess.x, &messMess.y, &messMess.z);
+
+		//Share the message
+		message->SetValue(Vector3(messMess).ToString());
+		break;
+	}
+	}
 }

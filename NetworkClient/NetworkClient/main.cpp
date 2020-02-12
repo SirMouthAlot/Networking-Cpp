@@ -25,12 +25,12 @@ int main()
 
 	printf("You have connected!\n");
 
-	int i = 1;
+	float i = 0.0001f;	
 	while (true)
 	{
-		/*SendInt(201, MessageFlags::BROADCAST_ALL);
+		SendInt(201, MessageFlags::BROADCAST_ALL);
 		SendVector(Vector3CS(0.f, -9.f, i), MessageFlags::BROADCAST_ALL);
-		i++;*/
+		i += 0.0001f;
 	}
 
 	return 0;
