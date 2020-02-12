@@ -2,12 +2,13 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
-#include "Convertable.h"
-#include "PluginSettings.h"
 
-class PLUGIN_API Bool : Convertable
+#include "Convertable.h"
+
+class Bool : Convertable
 {
 public:
+	Bool() : m_bool(false) { }
 	Bool(bool bl) : m_bool(bl) { }
 
 	virtual std::string ToString() override;
@@ -16,9 +17,10 @@ public:
 	bool m_bool;
 };
 
-struct PLUGIN_API Int : Convertable
+struct Int : Convertable
 {
 public:
+	Int() : m_int(0) { }
 	Int(int it) : m_int(it) { }
 
 	virtual std::string ToString() override;
@@ -27,9 +29,10 @@ public:
 	int m_int;
 };
 
-struct PLUGIN_API Long : Convertable
+struct Long : Convertable
 {
 public:
+	Long() : m_long(0) { }
 	Long(long lng) : m_long(lng) { }
 
 	virtual std::string ToString() override;
@@ -38,9 +41,10 @@ public:
 	long m_long;
 };
 
-struct PLUGIN_API Short : Convertable
+struct Short : Convertable
 {
 public:
+	Short() : m_short(0) { }
 	Short(short srt) : m_short(srt) { }
 
 	virtual std::string ToString() override;
@@ -49,9 +53,10 @@ public:
 	short m_short;
 };
 
-struct PLUGIN_API Float : Convertable
+struct Float : Convertable
 {
 public:
+	Float() : m_float(0.f) { }
 	Float(float flt) : m_float(flt) { }
 
 	virtual std::string ToString() override;
@@ -60,9 +65,10 @@ public:
 	float m_float;
 };
 
-struct PLUGIN_API Double : Convertable
+struct Double : Convertable
 {
 public:
+	Double() : m_double(0.0) { }
 	Double(double dbl) : m_double(dbl) { }
 
 	virtual std::string ToString() override;

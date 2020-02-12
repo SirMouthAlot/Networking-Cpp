@@ -138,17 +138,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Client.cpp" />
     <ClCompile Include="Convertable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkingWrapper.cpp" />
     <ClCompile Include="Number.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Client.h" />
     <ClInclude Include="Convertable.h" />
     <ClInclude Include="NetworkingWrapper.h" />
     <ClInclude Include="Number.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>

@@ -1,20 +1,5 @@
-#include "NetworkingWrapper.h"
+#include "Server.h"
 #include <thread>
-
-bool keepOpen = true;
-
-void GetPositionInfo()
-{
-	printf("Current ship position\n");
-	Float x, y, z;
-	NetworkingWrapper::ReceiveMsg(&x);
-	printf("%f\n", x.m_float);
-	NetworkingWrapper::ReceiveMsg(&y);
-	printf("%f\n", y.m_float);
-	NetworkingWrapper::ReceiveMsg(&z);
-	printf("%f\n", z.m_float);
-	printf("\n");
-}
 
 bool ExitProgram()
 {
@@ -27,31 +12,30 @@ bool ExitProgram()
 	}
 }
 
+void ReceiveMessages(Server server)
+{
+	while (true)
+	{
+		server.RecvMsg();
+	}
+}
+
 
 int main()
 {
-	NetworkingWrapper::StartupWinsock();
-	NetworkingWrapper::SetupHints(AF_INET, SOCK_DGRAM, IPPROTO_UDP, AI_PASSIVE);
-	NetworkingWrapper::ConnectTo("");
-
-	NetworkingWrapper::CreateSocket(IPPROTO_UDP);
-	NetworkingWrapper::BindSocket();
-
-	//Start a separate thread for receiving data
+	//Start a separate thread for exiting program
 	std::thread t1;
-
-	//Keeps the exit program loop running at all times
 	t1 = std::thread(ExitProgram);
 	t1.detach();
 
-	while (keepOpen)
+	//Server stuffs
+	Server myServer;
+	myServer.InitServer();
+
+	while (true)
 	{
-		GetPositionInfo();
+		myServer.RecvMsg();
 	}
-
-	system("pause");
-
-	NetworkingWrapper::CloseWinsock();
 
 	return 0;
 }

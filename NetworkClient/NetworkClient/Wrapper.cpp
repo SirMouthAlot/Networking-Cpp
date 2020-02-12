@@ -1,44 +1,59 @@
 #include "Wrapper.h"
 
-PLUGIN_API bool StartupWinsock()
+Client myClient;
+
+PLUGIN_API void InitClient()
 {
-	return NetworkingWrapper::StartupWinsock();
+	return myClient.InitClient();
 }
 
-PLUGIN_API void SetupHints()
+PLUGIN_API void ConnectToServer(const char* ip)
 {
-	return NetworkingWrapper::SetupHints();
+	return myClient.ConnectToServer(ip);
 }
 
-PLUGIN_API void ConnectTo(const char* ip)
-{
-	return NetworkingWrapper::ConnectTo(ip);
-}
-
-PLUGIN_API void CreateSocket()
-{
-	return NetworkingWrapper::CreateSocket();
-}
-
-PLUGIN_API bool SendFloat(float flt)
+PLUGIN_API void SendFloat(float flt, MessageFlags flag)
 {
 	Float temp(flt);
-	return NetworkingWrapper::SendMsg(&temp);
+	return myClient.SendMsg(MessageType::MSG_FLOAT, &temp, flag);
 }
 
-PLUGIN_API bool SendInt(int it)
+PLUGIN_API void SendInt(int it, MessageFlags flag)
 {
 	Int temp(it);
-	return NetworkingWrapper::SendMsg(&temp);
+	return myClient.SendMsg(MessageType::MSG_INT, &temp, flag);
 }
 
-PLUGIN_API bool SendString(const char* str)
+PLUGIN_API void SendString(const char* str, MessageFlags flag)
 {
 	String temp(str);
-	return NetworkingWrapper::SendMsg(&temp);
+	return myClient.SendMsg(MessageType::MSG_STRING, &temp, flag);
 }
 
-PLUGIN_API bool ShutdownWinsock()
+PLUGIN_API float RecvFloat()
 {
-	return NetworkingWrapper::ShutdownSocket();
+	Float temp;
+	MessageType type;
+	myClient.RecvMsg(type, &temp);
+
+	return temp.m_float;
+}
+
+int RecvInt()
+{
+	Int temp;
+	MessageType type;
+	myClient.RecvMsg(type, &temp);
+
+	return temp.m_int;
+}
+
+PLUGIN_API std::string RecvString()
+{
+	String temp;
+	MessageType type;
+	myClient.RecvMsg(type, &temp);
+	
+	std::string test = temp.m_string;
+	return test;
 }

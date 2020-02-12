@@ -1,9 +1,8 @@
 #pragma once
-#include "PluginSettings.h"
 
 //A class that is convertable
 //*Currently only converts to string but can be made to convert to other things
-class PLUGIN_API Convertable
+class Convertable
 {
 public:
 	virtual std::string ToString()=0;

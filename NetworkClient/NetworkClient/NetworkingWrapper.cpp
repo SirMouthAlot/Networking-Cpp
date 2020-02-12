@@ -1,12 +1,5 @@
 #include "NetworkingWrapper.h"
 
-int NetworkingWrapper::m_maxClients = 4;
-
-SOCKET NetworkingWrapper::m_socket;
-struct addrinfo* NetworkingWrapper::m_ptr = NULL, m_hints;
-struct addrinfo NetworkingWrapper::m_hints;
-struct std::vector<sockaddr_in> NetworkingWrapper::m_addresses;
-
 bool NetworkingWrapper::StartupWinsock()
 {
 	//Initialize winsock
@@ -22,52 +15,60 @@ bool NetworkingWrapper::StartupWinsock()
 	return true;
 }
 
-void NetworkingWrapper::SetupHints(int family, int sockType, int protocol, int flag)
+addrinfo NetworkingWrapper::SetupHints(int family, int sockType, int protocol, int flag)
 {
-	memset(&m_hints, 0, sizeof(m_hints));
-	m_hints.ai_family = family;
-	m_hints.ai_socktype = sockType;
-	m_hints.ai_protocol = protocol;
-	m_hints.ai_flags = flag;
+	addrinfo hints;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = family;
+	hints.ai_socktype = sockType;
+	hints.ai_protocol = protocol;
+	hints.ai_flags = flag;
+
+	return hints;
 }
 
-void NetworkingWrapper::ConnectTo(std::string ip)
+bool NetworkingWrapper::ConnectToServer(std::string ip, addrinfo hints, addrinfo** ptr)
 {
 	if (ip == "")
 	{
-		if (getaddrinfo(NULL, "8888", &m_hints, &m_ptr) != 0) {
+		if (getaddrinfo(NULL, "8888", &hints, ptr) != 0) {
 			printf("Getaddrinfo failed!! %d\n", WSAGetLastError());
 			WSACleanup();
-			return;
+			return false;
 		}
 	}
 	else
 	{
-		if (getaddrinfo(ip.c_str(), "8888", &m_hints, &m_ptr) != 0) {
+		if (getaddrinfo(ip.c_str(), "8888", &hints, ptr) != 0) 
+		{
 			printf("Getaddrinfo failed!! %d\n", WSAGetLastError());
 			WSACleanup();
-			return;
+			return false;
 		}
 	}
+
+	return true;
 }
 
-void NetworkingWrapper::CreateSocket(IPPROTO protocol)
+SOCKET NetworkingWrapper::CreateSocket(IPPROTO protocol)
 {
-	m_socket = socket(AF_INET, SOCK_DGRAM, protocol);
+	SOCKET temp = socket(AF_INET, SOCK_DGRAM, protocol);
 
-	if (m_socket == INVALID_SOCKET) {
+	if (temp == INVALID_SOCKET) {
 		printf("Failed creating a socket %d\n", WSAGetLastError());
 		WSACleanup();
-		return;
 	}
+
+	return temp;
 }
 
-bool NetworkingWrapper::BindSocket()
+bool NetworkingWrapper::BindSocket(SOCKET sock, addrinfo* ptr)
 {
-	if (bind(m_socket, m_ptr->ai_addr, (int)m_ptr->ai_addrlen) == SOCKET_ERROR) {
+	if (bind(sock, ptr->ai_addr, (int)ptr->ai_addrlen) == SOCKET_ERROR) {
 		printf("Bind failed: %d\n", WSAGetLastError());
-		closesocket(m_socket);
-		freeaddrinfo(m_ptr);
+		closesocket(sock);
+		freeaddrinfo(ptr);
 		WSACleanup();
 		return false;
 	}
@@ -75,13 +76,13 @@ bool NetworkingWrapper::BindSocket()
 	return true;
 }
 
-bool NetworkingWrapper::SendMsg(Convertable* message)
+bool NetworkingWrapper::SendMsg(SOCKET sock, Convertable* message, addrinfo* ptr)
 {
 	//Make sure there's a conversion between T and string
 	std::string converted = message->ToString();
 
-	if (sendto(m_socket, converted.c_str(), (int)converted.size(), 0,
-		m_ptr->ai_addr, m_ptr->ai_addrlen) == SOCKET_ERROR)
+	if (sendto(sock, converted.c_str(), (int)converted.size(), 0,
+		ptr->ai_addr, ptr->ai_addrlen) == SOCKET_ERROR)
 	{
 		printf("Message failed to send!\n");
 		return false;
@@ -90,12 +91,12 @@ bool NetworkingWrapper::SendMsg(Convertable* message)
 	return true;
 }
 
-bool NetworkingWrapper::SendMsg(Convertable* message, sockaddr_in destinationSock)
+bool NetworkingWrapper::SendMsg(SOCKET sock, Convertable* message, sockaddr_in destinationSock)
 {
 	//Make sure there's a conversion between T and string
 	std::string converted = message->ToString();
 
-	if (sendto(m_socket, converted.c_str(), (int)converted.size(), 0,
+	if (sendto(sock, converted.c_str(), (int)converted.size(), 0,
 		(const sockaddr*)&destinationSock, sizeof(destinationSock)) == SOCKET_ERROR)
 	{
 		printf("Message failed to send!\n");
@@ -105,7 +106,7 @@ bool NetworkingWrapper::SendMsg(Convertable* message, sockaddr_in destinationSoc
 	return true;
 }
 
-bool NetworkingWrapper::ReceiveMsg(Convertable* message)
+sockaddr_in NetworkingWrapper::ReceiveMsg(SOCKET sock, std::string* message)
 {
 	// Receive msg from client
 	const unsigned int BUF_LEN = 512;
@@ -119,73 +120,39 @@ bool NetworkingWrapper::ReceiveMsg(Convertable* message)
 	int fromlen;
 	fromlen = sizeof(fromAddr);
 
-	if (recvfrom(m_socket, recv_buf, sizeof(recv_buf), 0,
+	if (recvfrom(sock, recv_buf, sizeof(recv_buf), 0,
 		(struct sockaddr*) & fromAddr, &fromlen) == SOCKET_ERROR)
 	{
 		printf("recvfrom() failed...%d\n", WSAGetLastError());
-		return false;
-	}
-
-	//Check if client in there, add it if we have less than max clients
-	if (FindClient(fromAddr) == -1)
-	{
-		//Return false, we're ignoring this client ;)
-		return false;
 	}
 
 	//Turns recv buffer into a string
 	std::string temp;
 	temp += recv_buf;
-	//Converts the string back into the correct type and stores it in referenced message
-	message->SetValue(temp);
+	*message = temp;
 
-	return true;
+	return fromAddr;
 }
 
-
-int NetworkingWrapper::FindClient(sockaddr_in clientAddr)
-{
-	auto it = std::find_if(m_addresses.begin(), m_addresses.end(), SAInCompare(clientAddr));
-
-	if (it == m_addresses.end())
-	{
-		return AddClient(clientAddr);
-	}
-
-	//Returns the position in index
-	return (it - m_addresses.begin());
-}
-
-int NetworkingWrapper::AddClient(sockaddr_in clientAddr)
-{
-	if (m_addresses.size() <= m_maxClients)
-	{
-		m_addresses.push_back(clientAddr);
-		return m_addresses.size() - 1;
-	}
-
-	return -1;
-}
-
-bool NetworkingWrapper::ShutdownSocket()
+bool NetworkingWrapper::ShutdownSocket(SOCKET sock, addrinfo* ptr)
 {
 	//Shutdown the socket
-	if (shutdown(m_socket, SD_BOTH) == SOCKET_ERROR) {
+	if (shutdown(sock, SD_BOTH) == SOCKET_ERROR) {
 		printf("Shutdown failed!  %d\n", WSAGetLastError());
-		closesocket(m_socket);
+		closesocket(sock);
 		WSACleanup();
 		return false;
 	}
 
-	CloseWinsock();
+	CloseWinsock(sock, ptr);
 	
 	return true;
 }
 
 
-void NetworkingWrapper::CloseWinsock()
+void NetworkingWrapper::CloseWinsock(SOCKET sock, addrinfo* ptr)
 {
-	closesocket(m_socket);
-	freeaddrinfo(m_ptr);
+	closesocket(sock);
+	freeaddrinfo(ptr);
 	WSACleanup();
 }

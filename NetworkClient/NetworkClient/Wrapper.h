@@ -1,23 +1,21 @@
 #pragma once
-#include "NetworkingWrapper.h"
+#include "Client.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-	//Put your functions here
-	PLUGIN_API bool StartupWinsock();
-	PLUGIN_API void SetupHints();
-	PLUGIN_API void ConnectTo(const char* ip);
+	PLUGIN_API void InitClient();
+	PLUGIN_API void ConnectToServer(const char* ip);
 
-	PLUGIN_API void CreateSocket();
+	PLUGIN_API void SendFloat(float flt, MessageFlags flag);
+	PLUGIN_API void SendInt(int it, MessageFlags flag);
+	PLUGIN_API void SendString(const char* str, MessageFlags flag);
 
-	PLUGIN_API bool SendFloat(float flt);
-	PLUGIN_API bool SendInt(int it);
-	PLUGIN_API bool SendString(const char* str);
-
-	PLUGIN_API bool ShutdownWinsock();
+	PLUGIN_API float RecvFloat();
+	PLUGIN_API int RecvInt();
+	PLUGIN_API std::string RecvString();
 
 #ifdef __cplusplus
 }

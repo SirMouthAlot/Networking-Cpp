@@ -5,6 +5,7 @@
 struct String : Convertable
 {
 public:
+	String() : m_string("") { }
 	String(std::string string) : m_string(string) { }
 
 	virtual std::string ToString() override;
